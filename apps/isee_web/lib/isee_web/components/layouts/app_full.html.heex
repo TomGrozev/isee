@@ -1,0 +1,8 @@
+<div class="flex flex-col h-screen relative">
+  <.live_component module={IseeWeb.Navbar} id="top_nav" active_tab={@active_tab} />
+
+  <main class="mt-16 relative w-full flex-1">
+    <.flash_group flash={@flash} />
+    <%= @inner_content %>
+  </main>
+</div>

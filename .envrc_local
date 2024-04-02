@@ -1,0 +1,4 @@
+export TEST=no
+export DB_ENDPOINT=http://localhost:8529
+export DB_USER=root
+export DB_PASSWORD=DEVCHANGEME

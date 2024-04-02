@@ -1,0 +1,47 @@
+<OSM.map id="cameras_map" class="h-full !bg-[#262626] z-10" style="dark_all">
+  <:marker
+    :for={camera <- @cameras}
+    latitude={elem(camera.location.coordinates, 1)}
+    longitude={elem(camera.location.coordinates, 0)}
+    type="circle"
+    properties='{"fillColor": "red", "radius": 3, "color": "black", "weight": 0.8, "fillOpacity": 0.5}'
+  >
+    <h3 class="text-md font-medium"><%= get_camera_name(camera) %></h3>
+    <.link
+      navigate={~p"/cameras/#{camera}"}
+      class="rounded-lg bg-zinc-900 hover:bg-zinc-700 py-2 px-3 text-sm font-semibold leading-6 !text-white mt-4 inline-block"
+    >
+      Go to Camera
+    </.link>
+  </:marker>
+  <:marker :if={@marker} latitude={@marker.latitude} longitude={@marker.longitude}>
+    <%= @marker.text %>
+  </:marker>
+</OSM.map>
+<div class="absolute w-full h-full inset-0 z-20 flex justify-end pointer-events-none">
+  <div class="flex flex-col h-full w-full md:w-96 py-5 pl-16 md:pl-0 pr-5">
+    <.search
+      class={"flex flex-col #{if @show_results, do: "h-full", else: ""}"}
+      results={@search_results}
+      show_results={@show_results}
+      query={@query}
+    />
+    <.form for={@settings} phx-change="set-search-settings">
+      <div
+        :if={not @show_results}
+        class="rounded border border-zinc-600 bg-zinc-800 py-1 px-2 mt-2 pointer-events-auto"
+      >
+        <span class="text-zinc-500">Search Radius</span>
+        <select
+          class="bg-transparent border-none focus:ring-0 text-white py-0"
+          name={@settings[:radius].name}
+        >
+          <%= Phoenix.HTML.Form.options_for_select(
+            [{"500m", 500}, {"1km", 1000}, {"2km", 2000}, {"5km", 5000}, {"10km", 10000}],
+            @settings[:radius].value
+          ) %>
+        </select>
+      </div>
+    </.form>
+  </div>
+</div>

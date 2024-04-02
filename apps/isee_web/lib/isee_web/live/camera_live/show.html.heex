@@ -1,0 +1,96 @@
+<.header breadcrumbs={[
+    {"Cameras", ~p"/cameras"}
+  ]}>
+  Camera <%= @camera.id %>
+  <:subtitle>This is a camera record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/cameras/#{@camera}/show/edit"} phx-click={JS.push_focus()}>
+      <.button secondary>Edit</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.back navigate={~p"/cameras"}>Back to cameras</.back>
+
+<video src={@camera.url} controls>
+  Your browser does not support the <code>video</code> element.
+</video>
+
+<.list>
+  <:item title="Url">
+    <.link href={@camera.url} target="_blank" class="underline"><%= @camera.url %></.link>
+  </:item>
+  <:item title="Location"><%= IseeWeb.Utils.Helpers.display_coords(@camera.location) %></:item>
+  <:item
+    :if={not is_nil(@camera.location) and Map.has_key?(@camera.location.properties, "address")}
+    title="Possible Address"
+  >
+    <%= Map.get(@camera.location.properties, "address") %>
+  </:item>
+</.list>
+
+<.list title="IP Details">
+  <:item title="IP"><%= @ip %></:item>
+  <:item title="Port"><%= @camera.url.port %></:item>
+  <:item :if={@ip_details_loading or @ip_details} title="Location">
+    <.loading loading={@ip_details_loading}>
+      <OSM.map :if={@live_action != :edit} id={@ip} class="z-10">
+        <:marker
+          latitude={@ip_details.latitude}
+          longitude={@ip_details.longitude}
+          radius={@ip_details.accuracy * 1000}
+        >
+          <%= @ip_details.organisation %>
+        </:marker>
+      </OSM.map>
+    </.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="Accuracy">
+    <.loading loading={@ip_details_loading}><%= @ip_details.accuracy %> km</.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="City">
+    <.loading loading={@ip_details_loading}><%= @ip_details.city %></.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="Country">
+    <.loading loading={@ip_details_loading}><%= @ip_details.country %></.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="State">
+    <.loading loading={@ip_details_loading}><%= @ip_details.state %></.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="IP Coordinates">
+    <.loading loading={@ip_details_loading}>
+      <div class="flex justify-between items-center">
+        <%= IseeWeb.Utils.Helpers.display_coords(@ip_details.latitude, @ip_details.longitude) %>
+
+        <.button
+          phx-click="set-ip-coords"
+          data-confirm="Are you sure you want to use these coordinates for the camera?"
+        >
+          Set as Camera Coordinates
+        </.button>
+      </div>
+    </.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="Organisation">
+    <.loading loading={@ip_details_loading}><%= @ip_details.organisation %></.loading>
+  </:item>
+  <:item :if={@ip_details_loading or @ip_details} title="Timezone">
+    <.loading loading={@ip_details_loading}><%= @ip_details.timezone %></.loading>
+  </:item>
+</.list>
+
+<.modal
+  :if={@live_action == :edit}
+  id="camera-modal"
+  show
+  on_cancel={JS.patch(~p"/cameras/#{@camera}")}
+>
+  <.live_component
+    module={IseeWeb.CameraLive.FormComponent}
+    id={@camera.id}
+    title={@page_title}
+    action={@live_action}
+    camera={@camera}
+    patch={~p"/cameras/#{@camera}"}
+  />
+</.modal>

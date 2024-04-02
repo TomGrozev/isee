@@ -1,0 +1,59 @@
+<.header>
+  Listing Cameras
+  <:actions>
+    <.link patch={~p"/cameras/import"}>
+      <.button>Bulk Import</.button>
+    </.link>
+    <.link patch={~p"/cameras/new"} class="ml-4">
+      <.button>New Camera</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.page_table
+  id="cameras-table"
+  rows={@streams.cameras}
+  meta={@meta}
+  path={~p"/cameras"}
+  row_click={fn {_id, camera} -> JS.navigate(~p"/cameras/#{camera}") end}
+>
+  <:col :let={{_, camera}} field={:url} label="Host"><%= camera.url.host %></:col>
+  <:col :let={{_, camera}} field={:locatio} label="Location">
+    <%= IseeWeb.Utils.Helpers.display_coords(camera.location) %>
+  </:col>
+  <:action :let={{_id, camera}}>
+    <div class="sr-only">
+      <.link navigate={~p"/cameras/#{camera}"}>Show</.link>
+    </div>
+    <.link patch={~p"/cameras/#{camera}/edit"} class="hover:text-zinc-400"><.icon name="hero-pencil" class="w-5 h-5" /></.link>
+  </:action>
+  <:action :let={{id, camera}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: camera.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+      class="text-rose-500 hover:text-rose-400"
+    >
+      <.icon name="hero-trash" class="w-5 h-5" />
+    </.link>
+  </:action>
+</.page_table>
+
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="camera-modal"
+  show
+  on_cancel={JS.patch(~p"/cameras")}
+>
+  <.live_component
+    module={IseeWeb.CameraLive.FormComponent}
+    id={@camera.id || :new}
+    title={@page_title}
+    action={@live_action}
+    camera={@camera}
+    patch={~p"/cameras"}
+  />
+</.modal>
+
+<.modal :if={@live_action == :import} id="import-modal" show on_cancel={JS.patch(~p"/cameras")}>
+  <.live_component module={IseeWeb.CameraLive.BulkImport} id={:import} patch={~p"/cameras"} />
+</.modal>
